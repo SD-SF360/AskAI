@@ -1,0 +1,323 @@
+/* ═══════════════════════════════════════════════════════════
+   AskSF360.css — full viewport AI chat, matches Figma exactly
+   Breaks out of .app max-width:1000px container
+   ═══════════════════════════════════════════════════════════ */
+
+/* Force the ask tab to escape the app container */
+.app:has(.ask-page) {
+  max-width: 100% !important;
+}
+
+.ask-page {
+  position: fixed;
+  top: 110px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+/* Landing: tight group in center */
+.ask-landing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 860px;
+  padding: 0 32px;
+  box-sizing: border-box;
+  gap: 0;
+}
+
+.ask-hero-title {
+  font-size: 36px;
+  font-weight: 500;
+  color: #fff;
+  text-align: center;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  margin: 0 0 56px 0;
+  white-space: nowrap;
+}
+
+/* Conversation */
+.ask-messages {
+  width: 100%;
+  max-width: 760px;
+  padding: 32px 24px 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+.ask-bubble-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.ask-bubble-row.user {
+  flex-direction: row-reverse;
+}
+
+.ask-ai-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(249, 115, 22, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.ask-bubble {
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.ask-bubble.user {
+  background: linear-gradient(135deg, #f97316, #ec4899);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.ask-bubble.ai {
+  background: #161616;
+  color: rgba(255,255,255,0.85);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-bottom-left-radius: 4px;
+}
+
+.ask-thinking {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  padding: 14px 18px;
+}
+
+.ask-thinking span {
+  width: 6px;
+  height: 6px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 50%;
+  animation: askDot 1.2s infinite ease-in-out;
+}
+
+.ask-thinking span:nth-child(2) { animation-delay: 0.2s; }
+.ask-thinking span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes askDot {
+  0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+  40%           { transform: scale(1);   opacity: 1;   }
+}
+
+/* Input area — inside landing or fixed when chatting */
+.ask-input-area {
+  width: 100%;
+  max-width: 860px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 0 32px;
+  box-sizing: border-box;
+}
+
+/* Fixed to bottom only during active chat */
+.ask-input-area--fixed {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 100%;
+  padding: 20px 32px 28px;
+  background: linear-gradient(to top, #0a0a0a 70%, transparent);
+  z-index: 20;
+  align-items: center;
+}
+
+.ask-input-inner {
+  width: 100%;
+  max-width: 860px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.ask-input-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  background: #1c1c1c;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 24px;
+  padding: 14px 14px 14px 28px;
+  gap: 10px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.ask-input-bar:focus-within {
+  border-color: rgba(249,115,22,0.35);
+  box-shadow: 0 0 0 3px rgba(249,115,22,0.06);
+}
+
+.ask-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 17px;
+  padding: 6px 0;
+  min-width: 0;
+  font-family: inherit;
+}
+
+.ask-input::placeholder { color: rgba(255,255,255,0.22); }
+
+.ask-mic-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.3);
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color 0.2s;
+  border-radius: 8px;
+}
+
+.ask-mic-btn:hover { color: rgba(255,255,255,0.7); }
+
+.ask-mic-btn.listening {
+  color: #ef4444;
+  animation: micPulse 1s infinite;
+}
+
+@keyframes micPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.ask-send-btn {
+  background: linear-gradient(135deg, #f97316, #ec4899);
+  border: none;
+  border-radius: 14px;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.ask-send-btn:hover  { opacity: 0.9; transform: scale(1.05); }
+.ask-send-btn:active { transform: scale(0.97); }
+
+.ask-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  position: relative;
+  margin-top: 20px;
+}
+
+.ask-suggestion {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.42);
+  font-size: 15px;
+  cursor: pointer;
+  padding: 7px 4px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: color 0.15s;
+  border-radius: 6px;
+  width: calc(100% - 28px);
+  font-family: inherit;
+}
+
+.ask-suggestion:hover { color: rgba(255,255,255,0.85); }
+
+.ask-suggestion-refresh {
+  position: absolute;
+  right: 0;
+  top: 2px;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.18);
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.ask-suggestion-refresh:hover { color: rgba(255,255,255,0.55); }
+
+.ask-clear {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.25);
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  align-self: center;
+  font-family: inherit;
+}
+
+.ask-clear:hover {
+  border-color: rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.6);
+}
+
+/* ── Ask SF360 header button ── */
+.askSF360Btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1.5px solid #e8520a;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.askSF360Btn:hover {
+  background: rgba(232, 82, 10, 0.12);
+}
+
+/* Override the emoji search icon */
+.searchIcon {
+  flex-shrink: 0;
+  margin-right: 2px;
+}
