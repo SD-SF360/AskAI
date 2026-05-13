@@ -14,7 +14,7 @@ import AskSF360 from "./AskSF360";
 
 // ── API URL ────────────────────────────────────────────────────────────────────
 // Change to https://sportsfan360-ai-agent-1.onrender.com when deploying
-const API_URL = "http://localhost:8001";
+const API_URL = "https://askai-1flm.onrender.com";
 
 // ── Quick stats pulled from your live dashboard ────────────────────────────────
 // These are fetched dynamically on load; fallback values shown until fetch completes
