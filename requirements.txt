@@ -8,3 +8,5 @@ flask-cors
 requests
 feedparser
 python-dotenv
+pandas 
+openpyxl 
