@@ -335,6 +335,11 @@ def home():
     return {"message": "SportsFan360 AI running"}
 
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
 @app.get("/feed")
 def feed():
     return get_feed()
