@@ -210,7 +210,7 @@ function AskSF360({ API_URL }) {
       {/* ── Conversation area ── */}
       {hasMessages && (
         <div className="ask-messages">
-          {[...messages].reverse().map((m, i) => renderMessage(m, messages.length - 1 - i))}
+          {messages.map((m, i) => renderMessage(m, i))}
           {loading && (
             <div className="ask-bubble-row ai">
               <div className="ask-ai-avatar">
