@@ -28,13 +28,16 @@ app.add_middleware(
 
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-DATA_NOTE = "\n\n📊 Stats cover IPL 2021 onwards (current squad players only)."
+DATA_NOTE     = "\n\n📊 Stats sourced from Cricsheet — IPL 2008 to 2026, all T20 formats."
+DATA_NOTE_IPL = "\n\n📊 IPL career stats, 2008–2026 (all seasons)."
+DATA_NOTE_26  = "\n\n📊 IPL 2026 season stats only."
+DATA_NOTE_T20 = "\n\n📊 All T20 Internationals (career)."
 
-# Load dashboard data at startup
+# Load data at startup
 try:
     dl.load()
 except Exception as e:
-    print("Dashboard load failed at startup:", e)
+    print("Data layer load failed at startup:", e)
 
 
 # ── Groq helper (open-ended knowledge questions only) ─────────────────────────
@@ -96,31 +99,31 @@ def _leaderboard_text(rows: list, stat_key: str, stat_label: str) -> str:
 
 
 def _player_summary(s: dict, context_label: str = "IPL career") -> str:
-    parts = [f"{s['name']} ({s['team']}, {s['role']})"]
+    nation = s.get("nation") or ""
+    header = f"{s['name']} ({nation})" if nation else s["name"]
+    parts  = [header]
 
     bat_parts = []
-    if s["runs"] is not None:
+    if s.get("runs") is not None:
         bat_parts.append(f"{int(s['runs'])} runs")
-    if s["avg"] is not None:
+    if s.get("avg") is not None:
         bat_parts.append(f"avg {_fmt_num(s['avg'])}")
-    if s["sr"] is not None:
+    if s.get("sr") is not None:
         bat_parts.append(f"SR {_fmt_num(s['sr'])}")
-    if s["sixes"] is not None:
+    if s.get("sixes") is not None:
         bat_parts.append(f"{int(s['sixes'])} sixes")
-    if s["hs"] is not None:
-        bat_parts.append(f"HS {int(s['hs'])}")
+    if s.get("fours") is not None:
+        bat_parts.append(f"{int(s['fours'])} fours")
     if bat_parts:
         parts.append(f"Batting ({context_label}): {', '.join(bat_parts)}")
 
     bowl_parts = []
-    if s["wickets"] is not None and s["wickets"] > 0:
+    if s.get("wickets") is not None and s["wickets"] > 0:
         bowl_parts.append(f"{int(s['wickets'])} wickets")
-    if s["bowl_avg"] is not None:
+    if s.get("bowl_avg") is not None:
         bowl_parts.append(f"avg {_fmt_num(s['bowl_avg'])}")
-    if s["economy"] is not None:
+    if s.get("economy") is not None:
         bowl_parts.append(f"econ {_fmt_num(s['economy'])}")
-    if s["best_bowling"]:
-        bowl_parts.append(f"BB {s['best_bowling']}")
     if bowl_parts:
         parts.append(f"Bowling ({context_label}): {', '.join(bowl_parts)}")
 
@@ -134,12 +137,11 @@ def _compare_text(result: dict) -> str:
 
     lines = [f"**{s1['name']}** vs **{s2['name']}** — IPL career comparison\n"]
 
-    # Batting row
     def bat_row(s):
-        r = s["runs"]
-        avg = s["avg"]
-        sr = s["sr"]
-        sx = s["sixes"]
+        r   = s.get("runs")
+        avg = s.get("avg")
+        sr  = s.get("sr")
+        sx  = s.get("sixes")
         return (
             f"  Runs: {int(r) if r else 'N/A'}  |  "
             f"Avg: {_fmt_num(avg)}  |  "
@@ -150,24 +152,12 @@ def _compare_text(result: dict) -> str:
     lines.append(f"{s1['name']}\n{bat_row(s1)}")
     lines.append(f"{s2['name']}\n{bat_row(s2)}")
 
-    # Percentile context if available
-    pct_lines = []
-    for label, key in [("Batting avg (vs peers)", "pct_bat_avg_ipl"), ("Batting SR (vs peers)", "pct_bat_sr_ipl")]:
-        p1 = s1.get(key)
-        p2 = s2.get(key)
-        if p1 is not None and p2 is not None:
-            pct_lines.append(f"  {label}: {s1['name']} {int(p1)}th pct  vs  {s2['name']} {int(p2)}th pct")
-    if pct_lines:
-        lines.append("\nPercentile rankings (among current IPL squad players):")
-        lines.extend(pct_lines)
-
-    # Edge summary
     edge_summary = []
-    if edges["more_runs"] != "n/a":
+    if edges.get("more_runs") not in (None, "n/a"):
         edge_summary.append(f"More runs: {edges['more_runs']}")
-    if edges["better_avg"] != "n/a":
+    if edges.get("better_avg") not in (None, "n/a"):
         edge_summary.append(f"Better avg: {edges['better_avg']}")
-    if edges["better_sr"] != "n/a":
+    if edges.get("better_sr") not in (None, "n/a"):
         edge_summary.append(f"Better SR: {edges['better_sr']}")
     if edge_summary:
         lines.append("\nEdge: " + "  |  ".join(edge_summary))
@@ -190,53 +180,44 @@ def ask(question: str):
     chart_title = ""
     chart_data = []
 
-    # ── Runs leaderboard ──────────────────────────────────────────────────────
+    # ── IPL career runs leaderboard ───────────────────────────────────────────
     if intent == "runs":
-        rows = dl.top_run_scorers(n=5, context="IPL")
+        rows = dl.top_run_scorers(n=5, prefix="IPL")
         chart_title = "Top 5 IPL run scorers (all-time)"
         chart_data = [{"player": r["player"], "value": r["runs"]} for r in rows]
         answer = (
-            f"{rows[0]['player']} leads all IPL run scorers with {rows[0]['runs']:,} runs "
+            f"**{rows[0]['player']}** leads all IPL run scorers with **{rows[0]['runs']:,} runs** "
             f"(avg {_fmt_num(rows[0]['avg'])}, SR {_fmt_num(rows[0]['sr'])}).\n\n"
             + _leaderboard_text(rows, "runs", "runs")
-            + DATA_NOTE
+            + DATA_NOTE_IPL
         )
 
-    # ── Wickets leaderboard ───────────────────────────────────────────────────
+    # ── IPL career wickets leaderboard ────────────────────────────────────────
     elif intent == "wickets":
-        rows = dl.top_wicket_takers(n=5, context="IPL")
+        rows = dl.top_wicket_takers(n=5, prefix="IPL")
         chart_title = "Top 5 IPL wicket takers (all-time)"
         chart_data = [{"player": r["player"], "value": r["wickets"]} for r in rows]
         answer = (
-            f"{rows[0]['player']} is the leading IPL wicket taker with {rows[0]['wickets']} wickets "
+            f"**{rows[0]['player']}** leads the IPL wicket charts with **{rows[0]['wickets']} wickets** "
             f"(avg {_fmt_num(rows[0]['avg'])}, econ {_fmt_num(rows[0]['economy'])}).\n\n"
             + _leaderboard_text(rows, "wickets", "wickets")
-            + DATA_NOTE
+            + DATA_NOTE_IPL
         )
 
     # ── Sixes leaderboard ─────────────────────────────────────────────────────
     elif intent == "sixes":
-        rows = dl.top_six_hitters(n=5, context="IPL")
+        rows = dl.top_six_hitters(n=5, prefix="IPL")
         chart_title = "Top 5 IPL six hitters (all-time)"
         chart_data = [{"player": r["player"], "value": r["sixes"]} for r in rows]
         answer = (
-            f"{rows[0]['player']} has hit the most sixes in IPL history — {rows[0]['sixes']} sixes.\n\n"
+            f"**{rows[0]['player']}** has hit the most sixes in IPL history — **{rows[0]['sixes']} sixes**.\n\n"
             + _leaderboard_text(rows, "sixes", "sixes")
-            + DATA_NOTE
+            + DATA_NOTE_IPL
         )
 
     # ── Highest individual score ──────────────────────────────────────────────
     elif intent == "highest_score":
-        hs = dl.highest_individual_score(context="IPL")
-        if hs:
-            chart_title = "Highest individual IPL score"
-            answer = (
-                f"The highest individual score in IPL history is {int(hs['score'])} "
-                f"by {hs['player']} ({hs['team']})."
-                + DATA_NOTE
-            )
-        else:
-            answer = "Highest score data is unavailable right now."
+        answer = _groq_answer(question)
 
     # ── Titles ────────────────────────────────────────────────────────────────
     elif intent == "titles":
@@ -247,7 +228,7 @@ def ask(question: str):
         top = winners[0]
         lines = [f"{t['team']}: {t['titles']}" for t in winners]
         answer = (
-            f"{top['team']} have won the most IPL titles ({top['titles']} championships).\n\n"
+            f"**{top['team']}** are joint-most successful with **{top['titles']} IPL titles**.\n\n"
             + "\n".join(lines)
         )
 
@@ -257,60 +238,172 @@ def ask(question: str):
         chart_title = "IPL 2026 points table"
         chart_data = [{"player": r["team"], "value": r["points"]} for r in rows]
         lines = [
-            f"{r['position']}. {r['team']} — {r['points']} pts  (W{r['won']} L{r['lost']} NRR {r['nrr']:+.3f})"
+            f"{r['position']}. **{r['team']}** — {r['points']} pts  (W{r['won']} L{r['lost']} NRR {r['nrr']:+.3f})"
             for r in rows
         ]
         leader = rows[0]
         answer = (
-            f"{leader['team']} top the IPL 2026 standings with {leader['points']} points.\n\n"
+            f"**{leader['team']}** top the IPL 2026 standings with **{leader['points']} points**.\n\n"
             + "\n".join(lines)
         )
+
+    # ── IPL 2026 season runs ──────────────────────────────────────────────────
+    elif intent == "ipl26_runs":
+        rows = dl.top_run_scorers_ipl26(n=5)
+        chart_title = "Top 5 run scorers — IPL 2026"
+        chart_data = [{"player": r["player"], "value": r["runs"]} for r in rows]
+        answer = (
+            f"**{rows[0]['player']}** leads the IPL 2026 run charts with **{rows[0]['runs']:,} runs** "
+            f"(avg {_fmt_num(rows[0]['avg'])}, SR {_fmt_num(rows[0]['sr'])}).\n\n"
+            + _leaderboard_text(rows, "runs", "runs")
+            + DATA_NOTE_26
+        )
+
+    # ── IPL 2026 season wickets ───────────────────────────────────────────────
+    elif intent == "ipl26_wickets":
+        rows = dl.top_wicket_takers_ipl26(n=5)
+        chart_title = "Top 5 wicket takers — IPL 2026"
+        chart_data = [{"player": r["player"], "value": r["wickets"]} for r in rows]
+        answer = (
+            f"**{rows[0]['player']}** leads IPL 2026 wickets with **{rows[0]['wickets']} wickets** "
+            f"(econ {_fmt_num(rows[0]['economy'])}).\n\n"
+            + _leaderboard_text(rows, "wickets", "wickets")
+            + DATA_NOTE_26
+        )
+
+    # ── Form window (2025) ────────────────────────────────────────────────────
+    elif intent == "form_runs":
+        rows = dl.top_form_batters(n=5)
+        chart_title = "Top 5 in-form batters (2025)"
+        chart_data = [{"player": r["player"], "value": r["runs"]} for r in rows]
+        answer = (
+            f"**{rows[0]['player']}** has been the standout batter in 2025 with **{rows[0]['runs']:,} runs** "
+            f"(avg {_fmt_num(rows[0]['avg'])}, SR {_fmt_num(rows[0]['sr'])}).\n\n"
+            + _leaderboard_text(rows, "runs", "runs")
+            + "\n\n📊 Stats from Jan 2025 onwards, all T20 formats."
+        )
+
+    # ── T20I runs ─────────────────────────────────────────────────────────────
+    elif intent == "t20i_runs":
+        rows = dl.top_run_scorers(n=5, prefix="T20I")
+        chart_title = "Top 5 T20I run scorers (all-time)"
+        chart_data = [{"player": r["player"], "value": r["runs"]} for r in rows]
+        answer = (
+            f"**{rows[0]['player']}** leads all T20I run scorers with **{rows[0]['runs']:,} runs** "
+            f"(avg {_fmt_num(rows[0]['avg'])}, SR {_fmt_num(rows[0]['sr'])}).\n\n"
+            + _leaderboard_text(rows, "runs", "runs")
+            + DATA_NOTE_T20
+        )
+
+    # ── T20I wickets ──────────────────────────────────────────────────────────
+    elif intent == "t20i_wickets":
+        rows = dl.top_wicket_takers(n=5, prefix="T20I")
+        chart_title = "Top 5 T20I wicket takers (all-time)"
+        chart_data = [{"player": r["player"], "value": r["wickets"]} for r in rows]
+        answer = (
+            f"**{rows[0]['player']}** leads all T20I wicket takers with **{rows[0]['wickets']} wickets** "
+            f"(avg {_fmt_num(rows[0]['avg'])}, econ {_fmt_num(rows[0]['economy'])}).\n\n"
+            + _leaderboard_text(rows, "wickets", "wickets")
+            + DATA_NOTE_T20
+        )
+
+    # ── Matchup: batter vs bowler ─────────────────────────────────────────────
+    elif intent == "matchup":
+        n1, n2 = dl.extract_compare_names(question)
+        if n1 and n2:
+            # Determine who is batter / bowler by trying both orders
+            result = dl.get_matchup(n1, n2, competition="IPL", phase="ALL")
+            if not result:
+                result = dl.get_matchup(n2, n1, competition="IPL", phase="ALL")
+                if result:
+                    n1, n2 = n2, n1  # swap so n1=batter, n2=bowler
+
+            if result:
+                chart_title = f"{result['batter']} vs {result['bowler']} — IPL matchup"
+                chart_data = [
+                    {"player": "Balls",        "value": result["balls"]},
+                    {"player": "Runs",         "value": result["runs"]},
+                    {"player": "Dismissals",   "value": result["dismissed"]},
+                    {"player": "Fours",        "value": result["fours"]},
+                    {"player": "Sixes",        "value": result["sixes"]},
+                ]
+                answer = (
+                    f"**{result['batter']}** vs **{result['bowler']}** in IPL (all phases):\n\n"
+                    f"Balls faced: {result['balls']}  |  Runs: {result['runs']}  |  "
+                    f"Dismissals: {result['dismissed']}\n"
+                    f"Strike rate: {_fmt_num(result['sr'])}  |  "
+                    f"Dot ball %: {_fmt_num(result['dot_pct'])}%  |  "
+                    f"Dismissal rate: {_fmt_num(result['dismiss_rate'])}%"
+                    + DATA_NOTE_IPL
+                )
+            else:
+                # Fall back to career
+                result = dl.get_matchup(n1, n2, competition="Career", phase="ALL")
+                if result:
+                    answer = (
+                        f"**{result['batter']}** vs **{result['bowler']}** (career, all T20s):\n\n"
+                        f"Balls: {result['balls']}  |  Runs: {result['runs']}  |  "
+                        f"Dismissals: {result['dismissed']}  |  SR: {_fmt_num(result['sr'])}"
+                        + DATA_NOTE
+                    )
+                else:
+                    answer = (
+                        f"Not enough data found for that matchup. "
+                        f"Try asking: 'How does Kohli bat against Bumrah?'"
+                    )
+        else:
+            answer = (
+                "I couldn't identify the two players. "
+                "Try: 'How does Kohli bat against Bumrah?'"
+            )
 
     # ── Compare two players ───────────────────────────────────────────────────
     elif intent == "compare":
         n1, n2 = dl.extract_compare_names(question)
         if n1 and n2:
-            result = dl.compare_players(n1, n2, context="IPL")
+            result = dl.compare_players(n1, n2, prefix="IPL")
             if "error" in result:
                 answer = result["error"]
             else:
-                chart_title = f"{n1} vs {n2} — IPL stats"
                 s1, s2 = result["player1"], result["player2"]
+                chart_title = f"{s1['name']} vs {s2['name']} — IPL stats"
                 chart_data = [
                     {"player": s1["name"], "metric": "Runs",    "value": s1["runs"] or 0},
                     {"player": s2["name"], "metric": "Runs",    "value": s2["runs"] or 0},
                     {"player": s1["name"], "metric": "Wickets", "value": s1["wickets"] or 0},
                     {"player": s2["name"], "metric": "Wickets", "value": s2["wickets"] or 0},
                 ]
-                answer = _compare_text(result) + DATA_NOTE
+                answer = _compare_text(result) + DATA_NOTE_IPL
         else:
             answer = (
                 "I couldn't identify two players to compare. "
-                "Try asking like: 'Compare Virat Kohli vs Rohit Sharma'."
+                "Try: 'Compare Virat Kohli vs Rohit Sharma'."
             )
 
     # ── Player info ───────────────────────────────────────────────────────────
     elif intent == "player_info":
-        # Try to find a player name in the question
-        canonical = None
+        unique_name = None
         q_lower = question.lower()
-        for pname in dl.all_player_names():
+
+        # Try multi-word names first (longest match wins)
+        for pname in sorted(dl.all_player_names(), key=len, reverse=True):
             if pname.lower() in q_lower:
-                canonical = pname
+                unique_name = dl.resolve_player(pname)
                 break
-        if not canonical:
-            # Try word-by-word resolution
+
+        # Fallback: word-by-word
+        if not unique_name:
             for word in q_lower.split():
-                canonical = dl.resolve_player(word)
-                if canonical:
+                unique_name = dl.resolve_player(word)
+                if unique_name:
                     break
 
-        if canonical:
-            stats = dl.get_player_stats(canonical, context="IPL")
+        if unique_name:
+            stats = dl.get_player_stats(unique_name, prefix="IPL")
             if stats:
-                answer = _player_summary(stats, context_label="IPL career")
+                answer = _player_summary(stats, context_label="IPL career") + DATA_NOTE_IPL
             else:
-                answer = f"Found {canonical} but couldn't load their stats."
+                answer = f"Found {dl.resolve_display(unique_name)} but couldn't load their stats."
         else:
             answer = _groq_answer(question)
 
