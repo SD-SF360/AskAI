@@ -22,14 +22,14 @@
 
 /* ── Top logo bar ───────────────────────────────────────────── */
 .ask-topbar {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  padding: 18px 28px;
+  width: 100%;
+  flex-shrink: 0;
+  padding: 14px 28px;
   display: flex;
   align-items: center;
   gap: 10px;
   z-index: 30;
-  pointer-events: none;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 
 .ask-topbar-logo {
@@ -55,7 +55,7 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 0 24px 80px;
+  padding: 0 28px 60px;
   box-sizing: border-box;
 }
 
@@ -81,9 +81,9 @@
 .ask-messages {
   flex: 1;
   width: 100%;
-  max-width: 780px;
+  max-width: 960px;
   margin: 0 auto;
-  padding: 24px 24px 16px;
+  padding: 20px 28px 16px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -181,7 +181,7 @@
 
 .ask-input-inner {
   width: 100%;
-  max-width: 780px;
+  max-width: 960px;
   padding: 0 24px;
   box-sizing: border-box;
   display: flex;
