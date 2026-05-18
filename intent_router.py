@@ -115,6 +115,50 @@ _RULES = [
         r"\bsix (king|machine|leader)\b",
     ]),
 
+    # ── Most fours ───────────────────────────────────────────────────────────
+    ("fours", [
+        r"\bmost (ipl )?fours\b",
+        r"\bmost (ipl )?boundaries\b",
+        r"\bwho (has )?hit (the )?most four\b",
+        r"\bfour (king|leader|hitter)\b",
+        r"\bboundary (king|leader|hitter)\b",
+    ]),
+
+    # ── Best batting average ──────────────────────────────────────────────────
+    ("best_avg", [
+        r"\bbest (ipl )?batting average\b",
+        r"\bhighest (ipl )?batting average\b",
+        r"\bwho (has |averages? )?(the )?best average\b",
+        r"\btop (ipl )?average\b",
+        r"\bbest avg\b",
+    ]),
+
+    # ── Best economy rate ─────────────────────────────────────────────────────
+    ("best_economy", [
+        r"\bbest (ipl )?economy\b",
+        r"\blowest (ipl )?economy\b",
+        r"\bbest (ipl )?economy rate\b",
+        r"\bmost (ipl )?economical\b",
+        r"\bwho (has |bowls? )?(the )?best economy\b",
+        r"\btightest bowler\b",
+    ]),
+
+    # ── Best bowling average ──────────────────────────────────────────────────
+    ("best_bowl_avg", [
+        r"\bbest (ipl )?bowling average\b",
+        r"\blowest (ipl )?bowling average\b",
+        r"\bwho (has )?(the )?best bowling average\b",
+    ]),
+
+    # ── Best strike rate (batting) ────────────────────────────────────────────
+    ("best_sr", [
+        r"\bbest (ipl )?strike rate\b",
+        r"\bhighest (ipl )?strike rate\b",
+        r"\bwho (has )?(the )?best (batting )?strike rate\b",
+        r"\bfastest (ipl )?scorer\b",
+        r"\bbest sr\b",
+    ]),
+
     # ── T20I stats ────────────────────────────────────────────────────────────
     ("t20i_runs", [
         r"\bmost t20i runs\b",

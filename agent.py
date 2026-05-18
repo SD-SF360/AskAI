@@ -215,6 +215,95 @@ def ask(question: str):
             + DATA_NOTE_IPL
         )
 
+    # ── Most fours ────────────────────────────────────────────────────────────
+    elif intent == "fours":
+        rows = dl.top_run_scorers(n=5, prefix="IPL")
+        # Sort by fours specifically
+        import pandas as pd
+        col = "Fours_IPL"
+        df = dl.players_df.dropna(subset=[col]).sort_values(col, ascending=False).head(5)
+        rows = [{"rank": i+1, "player": dl.resolve_display(r["unique_name"]), "fours": int(r[col])}
+                for i, (_, r) in enumerate(df.iterrows())]
+        chart_title = "Top 5 IPL four hitters (all-time)"
+        chart_data = [{"player": r["player"], "value": r["fours"]} for r in rows]
+        answer = (
+            f"**{rows[0]['player']}** has hit the most fours in IPL history — **{rows[0]['fours']} fours**.\n\n"
+            + "\n".join([f"{r['rank']}. {r['player']} — {r['fours']} fours" for r in rows])
+            + DATA_NOTE_IPL
+        )
+
+    # ── Best batting average ──────────────────────────────────────────────────
+    elif intent == "best_avg":
+        col = "Batting_Avg_IPL"
+        inn_col = "Innings_IPL"
+        df = dl.players_df.dropna(subset=[col, inn_col])
+        df = df[df[inn_col] >= 20].sort_values(col, ascending=False).head(5)
+        rows = [{"rank": i+1, "player": dl.resolve_display(r["unique_name"]),
+                 "avg": r[col], "innings": int(r[inn_col])}
+                for i, (_, r) in enumerate(df.iterrows())]
+        chart_title = "Best IPL batting averages (min 20 innings)"
+        chart_data = [{"player": r["player"], "value": round(r["avg"], 1)} for r in rows]
+        answer = (
+            f"**{rows[0]['player']}** has the best IPL batting average — **{_fmt_num(rows[0]['avg'])}** "
+            f"(in {rows[0]['innings']} innings).\n\n"
+            + "\n".join([f"{r['rank']}. {r['player']} — avg {_fmt_num(r['avg'])} ({r['innings']} innings)" for r in rows])
+            + "\n\n📊 Minimum 20 innings. IPL career stats, 2008–2026."
+        )
+
+    # ── Best economy rate ─────────────────────────────────────────────────────
+    elif intent == "best_economy":
+        col = "Econ_IPL"
+        bowl_col = "Bowl_Innings_IPL"
+        df = dl.players_df.dropna(subset=[col, bowl_col])
+        df = df[df[bowl_col] >= 20].sort_values(col, ascending=True).head(5)
+        rows = [{"rank": i+1, "player": dl.resolve_display(r["unique_name"]),
+                 "economy": r[col], "innings": int(r[bowl_col])}
+                for i, (_, r) in enumerate(df.iterrows())]
+        chart_title = "Best IPL economy rates (min 20 innings)"
+        chart_data = [{"player": r["player"], "value": round(r["economy"], 2)} for r in rows]
+        answer = (
+            f"**{rows[0]['player']}** has the best IPL economy rate — **{_fmt_num(rows[0]['economy'])}** runs/over "
+            f"(in {rows[0]['innings']} innings).\n\n"
+            + "\n".join([f"{r['rank']}. {r['player']} — econ {_fmt_num(r['economy'])} ({r['innings']} innings)" for r in rows])
+            + "\n\n📊 Minimum 20 bowling innings. IPL career stats, 2008–2026."
+        )
+
+    # ── Best bowling average ──────────────────────────────────────────────────
+    elif intent == "best_bowl_avg":
+        col = "Bowling_Avg_IPL"
+        wkt_col = "Wickets_IPL"
+        df = dl.players_df.dropna(subset=[col, wkt_col])
+        df = df[df[wkt_col] >= 30].sort_values(col, ascending=True).head(5)
+        rows = [{"rank": i+1, "player": dl.resolve_display(r["unique_name"]),
+                 "bowl_avg": r[col], "wickets": int(r[wkt_col])}
+                for i, (_, r) in enumerate(df.iterrows())]
+        chart_title = "Best IPL bowling averages (min 30 wickets)"
+        chart_data = [{"player": r["player"], "value": round(r["bowl_avg"], 1)} for r in rows]
+        answer = (
+            f"**{rows[0]['player']}** has the best IPL bowling average — **{_fmt_num(rows[0]['bowl_avg'])}** "
+            f"({rows[0]['wickets']} wickets).\n\n"
+            + "\n".join([f"{r['rank']}. {r['player']} — avg {_fmt_num(r['bowl_avg'])} ({r['wickets']} wickets)" for r in rows])
+            + "\n\n📊 Minimum 30 wickets. IPL career stats, 2008–2026."
+        )
+
+    # ── Best strike rate (batting) ────────────────────────────────────────────
+    elif intent == "best_sr":
+        col = "Batting_SR_IPL"
+        inn_col = "Innings_IPL"
+        df = dl.players_df.dropna(subset=[col, inn_col])
+        df = df[df[inn_col] >= 20].sort_values(col, ascending=False).head(5)
+        rows = [{"rank": i+1, "player": dl.resolve_display(r["unique_name"]),
+                 "sr": r[col], "innings": int(r[inn_col])}
+                for i, (_, r) in enumerate(df.iterrows())]
+        chart_title = "Best IPL batting strike rates (min 20 innings)"
+        chart_data = [{"player": r["player"], "value": round(r["sr"], 1)} for r in rows]
+        answer = (
+            f"**{rows[0]['player']}** has the best IPL batting strike rate — **{_fmt_num(rows[0]['sr'])}** "
+            f"(in {rows[0]['innings']} innings).\n\n"
+            + "\n".join([f"{r['rank']}. {r['player']} — SR {_fmt_num(r['sr'])} ({r['innings']} innings)" for r in rows])
+            + "\n\n📊 Minimum 20 innings. IPL career stats, 2008–2026."
+        )
+
     # ── Highest individual score ──────────────────────────────────────────────
     elif intent == "highest_score":
         answer = _groq_answer(question)

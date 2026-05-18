@@ -1,62 +1,95 @@
 /* ═══════════════════════════════════════════════════════════
-   AskSF360.css — full viewport AI chat, matches Figma exactly
-   Breaks out of .app max-width:1000px container
+   AskSF360.css — Google AI Mode inspired redesign
+   Clean, full-width, minimal chrome
    ═══════════════════════════════════════════════════════════ */
 
-/* Force the ask tab to escape the app container */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap');
+
 .app:has(.ask-page) {
   max-width: 100% !important;
 }
 
+/* ── Page shell ─────────────────────────────────────────────── */
 .ask-page {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: #0a0a0a;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #0c0c0c;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 10;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Top logo bar ───────────────────────────────────────────── */
+.ask-topbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  padding: 18px 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.ask-topbar-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.ask-topbar-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ── Landing: full center ───────────────────────────────────── */
+.ask-landing {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  z-index: 10;
-}
-
-/* Landing: tight group in center */
-.ask-landing {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   width: 100%;
-  max-width: 860px;
-  padding: 0 32px;
+  padding: 0 24px 160px;
   box-sizing: border-box;
-  gap: 0;
 }
 
 .ask-hero-title {
-  font-size: 36px;
-  font-weight: 500;
-  color: #fff;
+  font-size: clamp(24px, 4vw, 40px);
+  font-weight: 300;
+  color: rgba(255,255,255,0.88);
   text-align: center;
-  line-height: 1.3;
+  line-height: 1.25;
   letter-spacing: -0.02em;
-  margin: 0 0 56px 0;
-  white-space: nowrap;
+  margin: 0 0 48px;
 }
 
-/* Conversation */
+.ask-hero-title span {
+  background: linear-gradient(90deg, #f97316, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 500;
+}
+
+/* ── Conversation area ──────────────────────────────────────── */
 .ask-messages {
+  flex: 1;
   width: 100%;
-  max-width: 760px;
-  padding: 32px 24px 260px;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 72px 24px 200px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
   box-sizing: border-box;
   overflow-y: auto;
-  flex: 1;
   scrollbar-width: none;
 }
 
@@ -64,19 +97,24 @@
 
 .ask-bubble-row {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: flex-start;
+  animation: bubbleIn 0.2s ease;
 }
 
-.ask-bubble-row.user {
-  flex-direction: row-reverse;
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
+
+.ask-bubble-row.user { flex-direction: row-reverse; }
 
 .ask-ai-avatar {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: rgba(249, 115, 22, 0.12);
+  background: linear-gradient(135deg, rgba(249,115,22,0.12), rgba(236,72,153,0.12));
+  border: 1px solid rgba(249,115,22,0.18);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -85,11 +123,12 @@
 }
 
 .ask-bubble {
-  max-width: 80%;
-  padding: 12px 16px;
-  border-radius: 16px;
-  line-height: 1.6;
-  font-size: 14px;
+  max-width: 75%;
+  padding: 14px 18px;
+  border-radius: 18px;
+  line-height: 1.65;
+  font-size: 15px;
+  font-family: 'DM Sans', sans-serif;
 }
 
 .ask-bubble.user {
@@ -100,8 +139,8 @@
 
 .ask-bubble.ai {
   background: #161616;
-  color: rgba(255,255,255,0.85);
-  border: 1px solid rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.88);
+  border: 1px solid rgba(255,255,255,0.06);
   border-bottom-left-radius: 4px;
 }
 
@@ -109,74 +148,75 @@
   display: flex;
   gap: 5px;
   align-items: center;
-  padding: 14px 18px;
+  padding: 16px 18px;
 }
 
 .ask-thinking span {
-  width: 6px;
-  height: 6px;
-  background: rgba(255,255,255,0.3);
+  width: 6px; height: 6px;
+  background: rgba(255,255,255,0.25);
   border-radius: 50%;
   animation: askDot 1.2s infinite ease-in-out;
 }
-
 .ask-thinking span:nth-child(2) { animation-delay: 0.2s; }
 .ask-thinking span:nth-child(3) { animation-delay: 0.4s; }
 
 @keyframes askDot {
-  0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
-  40%           { transform: scale(1);   opacity: 1;   }
+  0%, 80%, 100% { transform: scale(0.7); opacity: 0.3; }
+  40%           { transform: scale(1);   opacity: 1; }
 }
 
-/* Input area — inside landing or fixed when chatting */
+/* ── Input area (landing = inline, chat = fixed bottom) ─────── */
 .ask-input-area {
   width: 100%;
-  max-width: 860px;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.ask-input-area--fixed {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  max-width: 100%;
+  padding: 0 0 28px;
+  background: linear-gradient(to top, #0c0c0c 65%, transparent);
+  z-index: 20;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  padding: 0 32px;
-  box-sizing: border-box;
 }
 
-/* Fixed to bottom only during active chat */
-.ask-input-area--fixed {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  max-width: 100%;
-  padding: 16px 32px 24px;
-  background: linear-gradient(to top, #0a0a0a 80%, transparent);
-  z-index: 20;
-  align-items: center;
+.ask-input-area--fixed .ask-input-inner {
+  width: 100%;
+  max-width: 780px;
+  padding: 0 24px;
+  box-sizing: border-box;
 }
 
 .ask-input-inner {
   width: 100%;
-  max-width: 860px;
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
 
 .ask-input-bar {
   width: 100%;
   display: flex;
   align-items: center;
-  background: #1c1c1c;
-  border: 1px solid rgba(255,255,255,0.09);
-  border-radius: 24px;
-  padding: 14px 14px 14px 28px;
-  gap: 10px;
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 28px;
+  padding: 10px 10px 10px 24px;
+  gap: 8px;
   box-sizing: border-box;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .ask-input-bar:focus-within {
-  border-color: rgba(249,115,22,0.35);
-  box-shadow: 0 0 0 3px rgba(249,115,22,0.06);
+  border-color: rgba(249,115,22,0.3);
+  box-shadow: 0 0 0 3px rgba(249,115,22,0.05);
 }
 
 .ask-input {
@@ -185,18 +225,19 @@
   border: none;
   outline: none;
   color: #fff;
-  font-size: 17px;
-  padding: 6px 0;
+  font-size: 16px;
+  padding: 8px 0;
   min-width: 0;
-  font-family: inherit;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
 }
 
-.ask-input::placeholder { color: rgba(255,255,255,0.22); }
+.ask-input::placeholder { color: rgba(255,255,255,0.2); }
 
 .ask-mic-btn {
   background: transparent;
   border: none;
-  color: rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.25);
   cursor: pointer;
   padding: 8px;
   display: flex;
@@ -207,7 +248,7 @@
   border-radius: 8px;
 }
 
-.ask-mic-btn:hover { color: rgba(255,255,255,0.7); }
+.ask-mic-btn:hover { color: rgba(255,255,255,0.6); }
 
 .ask-mic-btn.listening {
   color: #ef4444;
@@ -222,9 +263,9 @@
 .ask-send-btn {
   background: linear-gradient(135deg, #f97316, #ec4899);
   border: none;
-  border-radius: 14px;
-  width: 52px;
-  height: 52px;
+  border-radius: 20px;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -236,93 +277,68 @@
 .ask-send-btn:hover  { opacity: 0.9; transform: scale(1.05); }
 .ask-send-btn:active { transform: scale(0.97); }
 
+/* ── Suggestions ────────────────────────────────────────────── */
 .ask-suggestions {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
   width: 100%;
   position: relative;
-  margin-top: 20px;
+  margin-top: 12px;
+  padding: 0 4px;
+  box-sizing: border-box;
 }
 
 .ask-suggestion {
   background: transparent;
   border: none;
-  color: rgba(255,255,255,0.42);
-  font-size: 15px;
+  color: rgba(255,255,255,0.32);
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
   cursor: pointer;
-  padding: 7px 4px;
+  padding: 8px 6px;
   text-align: left;
   display: flex;
   align-items: center;
   gap: 10px;
   transition: color 0.15s;
-  border-radius: 6px;
+  border-radius: 8px;
   width: calc(100% - 28px);
-  font-family: inherit;
 }
 
-.ask-suggestion:hover { color: rgba(255,255,255,0.85); }
+.ask-suggestion:hover { color: rgba(255,255,255,0.75); }
 
 .ask-suggestion-refresh {
   position: absolute;
-  right: 0;
-  top: 2px;
+  right: 0; top: 4px;
   background: transparent;
   border: none;
-  color: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.15);
   cursor: pointer;
-  padding: 5px;
+  padding: 6px;
   display: flex;
   align-items: center;
   transition: color 0.2s;
 }
 
-.ask-suggestion-refresh:hover { color: rgba(255,255,255,0.55); }
+.ask-suggestion-refresh:hover { color: rgba(255,255,255,0.45); }
 
+/* ── Clear chat ─────────────────────────────────────────────── */
 .ask-clear {
   background: transparent;
-  border: 1px solid rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.25);
+  border: 1px solid rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.2);
   font-size: 11px;
-  padding: 4px 12px;
+  font-family: 'DM Sans', sans-serif;
+  padding: 4px 14px;
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.2s;
   align-self: center;
-  font-family: inherit;
+  margin-top: 8px;
 }
 
 .ask-clear:hover {
-  border-color: rgba(255,255,255,0.25);
-  color: rgba(255,255,255,0.6);
-}
-
-/* ── Ask SF360 header button ── */
-.askSF360Btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: transparent;
-  border: 1.5px solid #e8520a;
-  color: #fff;
-  font-size: 12.5px;
-  font-weight: 500;
-  padding: 6px 14px;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-  font-family: inherit;
-  flex-shrink: 0;
-}
-
-.askSF360Btn:hover {
-  background: rgba(232, 82, 10, 0.12);
-}
-
-/* Override the emoji search icon */
-.searchIcon {
-  flex-shrink: 0;
-  margin-right: 2px;
+  border-color: rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.5);
 }
