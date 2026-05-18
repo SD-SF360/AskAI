@@ -94,7 +94,7 @@ def _leaderboard_text(rows: list, stat_key: str, stat_label: str) -> str:
     for r in rows:
         val = r.get(stat_key)
         val_str = str(int(val)) if val is not None and val == int(val) else _fmt_num(val)
-        lines.append(f"{r['rank']}. {r['player']} ({r['team']}) — {val_str} {stat_label}")
+        lines.append(f"{r['rank']}. {r['player']} — {val_str} {stat_label}")
     return "\n".join(lines)
 
 
