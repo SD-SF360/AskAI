@@ -9,4 +9,5 @@ requests
 feedparser
 python-dotenv
 pandas 
-openpyxl 
+openpyxl
+pyarrow
