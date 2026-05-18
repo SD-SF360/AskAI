@@ -835,7 +835,7 @@ def compute_player_agg(del_df, registry):
         elif prefix == "IPL":
             # season >= 2008: IPL started in 2008; pre-2008 matches in
             # ipl_male_json are Champions League or other non-IPL events
-            return df[df["is_ipl"] & (df["season"] >= 2008)]
+            return df[df["is_ipl"] & (df["season"] >= 2007)]
         elif prefix == "T20I":
             return df[df["is_t20i"]]
         elif prefix == "2025":
