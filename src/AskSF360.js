@@ -3,27 +3,13 @@ import "./AskSF360.css";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 const SUGGESTIONS = [
+  "Who won the first IPL?",
+  "Which player has won the most Orange Cap awards in IPL history?",
+  "Which team has won the highest number of IPL titles (tied at 5 each)?",
   "Most IPL runs",
   "Most IPL wickets",
   "Most IPL sixes",
-  "Most IPL fours",
-  "Best IPL batting average",
-  "Best IPL economy rate",
-  "Best IPL strike rate",
-  "Most runs in IPL 2026",
-  "Most wickets in IPL 2026",
-  "Most T20I runs",
-  "Most T20I wickets",
-  "Who is in best form in 2025?",
   "Compare Kohli vs Rohit",
-  "Compare Bumrah vs Rashid Khan",
-  "How does Kohli bat against Bumrah?",
-  "Who won the first IPL?",
-  "Which player has won the most Orange Cap awards in IPL history?",
-  "Which team has won the most IPL titles?",
-  "Virat Kohli IPL stats",
-  "Jasprit Bumrah IPL stats",
-  "MS Dhoni IPL career",
 ];
 
 // Pick 3 random suggestions
@@ -249,7 +235,7 @@ function AskSF360({ API_URL }) {
       )}
 
       {/* ── Input area — inline on landing, fixed when chatting ── */}
-      <div className={`ask-input-area ${hasMessages ? "ask-input-area--fixed" : ""}`}>
+      <div className="ask-input-area">
         <div className="ask-input-inner">
 
           {/* Input bar */}
