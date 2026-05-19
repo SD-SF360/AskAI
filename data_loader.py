@@ -457,7 +457,40 @@ def get_matchup(batter_name: str, bowler_name: str,
     }
 
 
-def get_batter_vs_all_bowlers(batter_name: str,
+def top_season_run_scorers(season: int, n: int = 5) -> list[dict]:
+    """Top run scorers in a specific IPL season — computed from bbb_base."""
+    load()
+    try:
+        bbb = pd.read_parquet(_PLAYERS_PATH.replace("players.parquet", "bbb_base.parquet"))
+        df = bbb[bbb["is_ipl"] & (bbb["season"] == season) & ~bbb["is_super_over"] & ~bbb["is_wide"]]
+        if df.empty:
+            return []
+        grp = df.groupby("batter")["runs_batter"].sum().sort_values(ascending=False).head(n)
+        return [
+            {"rank": i+1, "player": resolve_display(name) or name, "runs": int(runs)}
+            for i, (name, runs) in enumerate(grp.items())
+        ]
+    except Exception as e:
+        print(f"Season run scorers error: {e}")
+        return []
+
+
+def top_season_wicket_takers(season: int, n: int = 5) -> list[dict]:
+    """Top wicket takers in a specific IPL season — computed from bbb_base."""
+    load()
+    try:
+        bbb = pd.read_parquet(_PLAYERS_PATH.replace("players.parquet", "bbb_base.parquet"))
+        df = bbb[bbb["is_ipl"] & (bbb["season"] == season) & ~bbb["is_super_over"]]
+        if df.empty:
+            return []
+        grp = df.groupby("bowler")["bowl_wicket"].sum().sort_values(ascending=False).head(n)
+        return [
+            {"rank": i+1, "player": resolve_display(name) or name, "wickets": int(wkts)}
+            for i, (name, wkts) in enumerate(grp.items())
+        ]
+    except Exception as e:
+        print(f"Season wicket takers error: {e}")
+        return [](batter_name: str,
                                competition: str = "IPL",
                                phase: str = "ALL",
                                min_balls: int = 12,

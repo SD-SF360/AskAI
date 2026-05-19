@@ -159,7 +159,52 @@ _RULES = [
         r"\bbest sr\b",
     ]),
 
-    # ── T20I stats ────────────────────────────────────────────────────────────
+    # ── Best bowling strike rate ──────────────────────────────────────────────
+    ("best_bowl_sr", [
+        r"\bbest (ipl )?bowling strike rate\b",
+        r"\blowest (ipl )?bowling sr\b",
+        r"\bwho (has )?(the )?best bowling sr\b",
+        r"\bmost (ipl )?dangerous bowler\b",
+    ]),
+
+    # ── Season Orange Cap (most runs in a specific IPL season) ────────────────
+    ("season_orange_cap", [
+        r"\borange cap.*(ipl )?\d{4}\b",
+        r"\b(ipl )?\d{4}.*orange cap\b",
+        r"\bwho (won|got|scored most|was).*(orange cap|most runs).*(ipl )?\d{4}\b",
+        r"\b(most runs|top scorer|run scorer).*(ipl )?\d{4}\b",
+        r"\b(ipl )?\d{4}.*(most runs|top scorer|run scorer)\b",
+        r"\bwho scored (the )?most runs in (ipl )?\d{4}\b",
+    ]),
+
+    # ── Season Purple Cap (most wickets in a specific IPL season) ─────────────
+    ("season_purple_cap", [
+        r"\bpurple cap.*(ipl )?\d{4}\b",
+        r"\b(ipl )?\d{4}.*purple cap\b",
+        r"\bwho (won|got|took most).*(purple cap|most wickets).*(ipl )?\d{4}\b",
+        r"\b(most wickets|top wicket).*(ipl )?\d{4}\b",
+        r"\b(ipl )?\d{4}.*(most wickets|top wicket)\b",
+        r"\bwho took (the )?most wickets in (ipl )?\d{4}\b",
+    ]),
+
+    # ── Who troubles a batter most ────────────────────────────────────────────
+    ("who_troubles", [
+        r"\bwho (troubles|dominates|gets|dismisses|bowls out).*(kohli|sharma|dhoni|rahul|gill|warner|dhawan|\w+)\b",
+        r"\b(weakness|weakness of|problem bowler|nemesis).*(of|for)\b",
+        r"\bwhich bowler.*(troubles|dominates|gets out|is best against)\b",
+        r"\bwho (does \w+ struggle against|has (the )?best record against)\b",
+    ]),
+
+    # ── Player info with context (T20I / IPL26 / season-specific) ────────────
+    ("player_info_t20i", [
+        r"\b\w+.*(t20i|t20 international).*(stats|record|career|runs|wickets)\b",
+        r"\b(t20i|t20 international).*(stats|record).*(of|for)?\b",
+    ]),
+
+    ("player_info_ipl26", [
+        r"\b\w+.*(ipl 2026|ipl26|this season).*(stats|record|runs|wickets)\b",
+        r"\b(ipl 2026|ipl26|this season).*(stats|record).*(of|for)?\b",
+    ]),
     ("t20i_runs", [
         r"\bmost t20i runs\b",
         r"\btop t20i (run )?scorer\b",

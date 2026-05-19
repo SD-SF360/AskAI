@@ -469,8 +469,134 @@ def ask(question: str):
                 "Try: 'Compare Virat Kohli vs Rohit Sharma'."
             )
 
-    # ── Player info ───────────────────────────────────────────────────────────
-    elif intent == "player_info":
+    # ── Best bowling strike rate ──────────────────────────────────────────────
+    elif intent == "best_bowl_sr":
+        col = "Bowling_SR_IPL"
+        wkt_col = "Wickets_IPL"
+        df = dl.players_df.dropna(subset=[col, wkt_col])
+        df = df[df[wkt_col] >= 30].sort_values(col, ascending=True).head(5)
+        rows = [{"rank": i+1, "player": dl.resolve_display(r["unique_name"]),
+                 "bowl_sr": r[col], "wickets": int(r[wkt_col])}
+                for i, (_, r) in enumerate(df.iterrows())]
+        chart_title = "Best IPL bowling strike rates (min 30 wickets)"
+        chart_data = [{"player": r["player"], "value": round(r["bowl_sr"], 1)} for r in rows]
+        answer = (
+            f"**{rows[0]['player']}** has the best IPL bowling strike rate — **{_fmt_num(rows[0]['bowl_sr'])}** balls/wicket "
+            f"({rows[0]['wickets']} wickets).\n\n"
+            + "\n".join([f"{r['rank']}. {r['player']} — SR {_fmt_num(r['bowl_sr'])} ({r['wickets']} wickets)" for r in rows])
+            + "\n\n📊 Minimum 30 wickets. IPL career stats, 2008–2026."
+        )
+
+    # ── Season Orange Cap ─────────────────────────────────────────────────────
+    elif intent == "season_orange_cap":
+        import re as _re
+        yr_match = _re.search(r"\b(20\d{2})\b", question)
+        if yr_match:
+            season = int(yr_match.group(1))
+            rows = dl.top_season_run_scorers(season=season, n=5)
+            if rows:
+                chart_title = f"Top run scorers — IPL {season}"
+                chart_data = [{"player": r["player"], "value": r["runs"]} for r in rows]
+                answer = (
+                    f"**{rows[0]['player']}** scored the most runs in IPL {season} with **{rows[0]['runs']:,} runs** "
+                    f"— winning the Orange Cap.\n\n"
+                    + "\n".join([f"{r['rank']}. {r['player']} — {r['runs']:,} runs" for r in rows])
+                    + f"\n\n📊 IPL {season} season stats."
+                )
+            else:
+                answer = f"No data found for IPL {season}. Data covers IPL 2008–2026."
+        else:
+            answer = "Please specify a year — e.g. 'Who won the Orange Cap in IPL 2016?'"
+
+    # ── Season Purple Cap ─────────────────────────────────────────────────────
+    elif intent == "season_purple_cap":
+        import re as _re
+        yr_match = _re.search(r"\b(20\d{2})\b", question)
+        if yr_match:
+            season = int(yr_match.group(1))
+            rows = dl.top_season_wicket_takers(season=season, n=5)
+            if rows:
+                chart_title = f"Top wicket takers — IPL {season}"
+                chart_data = [{"player": r["player"], "value": r["wickets"]} for r in rows]
+                answer = (
+                    f"**{rows[0]['player']}** took the most wickets in IPL {season} with **{rows[0]['wickets']} wickets** "
+                    f"— winning the Purple Cap.\n\n"
+                    + "\n".join([f"{r['rank']}. {r['player']} — {r['wickets']} wickets" for r in rows])
+                    + f"\n\n📊 IPL {season} season stats."
+                )
+            else:
+                answer = f"No data found for IPL {season}. Data covers IPL 2008–2026."
+        else:
+            answer = "Please specify a year — e.g. 'Who won the Purple Cap in IPL 2019?'"
+
+    # ── Who troubles a batter most ────────────────────────────────────────────
+    elif intent == "who_troubles":
+        unique_name = None
+        q_lower = question.lower()
+        for pname in sorted(dl.all_player_names(), key=len, reverse=True):
+            if pname.lower() in q_lower:
+                unique_name = dl.resolve_player(pname)
+                break
+        if not unique_name:
+            for word in q_lower.split():
+                unique_name = dl.resolve_player(word)
+                if unique_name:
+                    break
+
+        if unique_name:
+            result = dl.get_batter_vs_all_bowlers(unique_name, competition="IPL", phase="ALL", min_balls=12, n=5)
+            if "error" not in result:
+                display = dl.resolve_display(unique_name)
+                weak = result["weak_against"]
+                chart_title = f"Bowlers who trouble {display} most — IPL"
+                chart_data = [{"player": r["bowler_display"], "value": round(r["dismiss_rate"], 1)} for r in weak]
+                answer = (
+                    f"In the IPL, **{display}** has been troubled most by:\n\n"
+                    + "\n".join([
+                        f"{i+1}. **{r['bowler_display']}** — dismissed {r['dismissed']}x in {r['balls']} balls "
+                        f"(dismiss rate {_fmt_num(r['dismiss_rate'])}%)"
+                        for i, r in enumerate(weak)
+                    ])
+                    + DATA_NOTE_IPL
+                )
+            else:
+                answer = result["error"]
+        else:
+            answer = "I couldn't identify the player. Try: 'Which bowlers trouble Kohli most?'"
+
+    # ── Player info — T20I context ────────────────────────────────────────────
+    elif intent == "player_info_t20i":
+        q_lower = question.lower()
+        unique_name = None
+        for pname in sorted(dl.all_player_names(), key=len, reverse=True):
+            if pname.lower() in q_lower:
+                unique_name = dl.resolve_player(pname)
+                break
+        if unique_name:
+            stats = dl.get_player_stats(unique_name, prefix="T20I")
+            if stats and stats.get("runs") is not None:
+                answer = _player_summary(stats, context_label="T20I career") + DATA_NOTE_T20
+            else:
+                answer = f"No T20I data found for {dl.resolve_display(unique_name)}."
+        else:
+            answer = _groq_answer(question)
+
+    # ── Player info — IPL 2026 context ────────────────────────────────────────
+    elif intent == "player_info_ipl26":
+        q_lower = question.lower()
+        unique_name = None
+        for pname in sorted(dl.all_player_names(), key=len, reverse=True):
+            if pname.lower() in q_lower:
+                unique_name = dl.resolve_player(pname)
+                break
+        if unique_name:
+            stats = dl.get_player_stats(unique_name, prefix="IPL26")
+            if stats and stats.get("runs") is not None:
+                answer = _player_summary(stats, context_label="IPL 2026") + DATA_NOTE_26
+            else:
+                answer = f"No IPL 2026 data found for {dl.resolve_display(unique_name)}."
+        else:
+            answer = _groq_answer(question)
         unique_name = None
         q_lower = question.lower()
 
