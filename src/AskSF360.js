@@ -34,9 +34,12 @@ function AskSF360({ API_URL }) {
 
   const hasMessages = messages.length > 0;
 
-  // Auto scroll
+  // Auto scroll — scroll the messages container to bottom
+  const messagesRef = useRef();
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesRef.current) {
+      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+    }
   }, [messages, loading]);
 
   // Shuffle suggestions
@@ -209,7 +212,7 @@ function AskSF360({ API_URL }) {
 
       {/* ── Conversation area ── */}
       {hasMessages && (
-        <div className="ask-messages">
+        <div className="ask-messages" ref={messagesRef}>
           {messages.map((m, i) => renderMessage(m, i))}
           {loading && (
             <div className="ask-bubble-row ai">
@@ -230,7 +233,6 @@ function AskSF360({ API_URL }) {
               </div>
             </div>
           )}
-          <div ref={chatEndRef} />
         </div>
       )}
 
@@ -290,8 +292,8 @@ function AskSF360({ API_URL }) {
             </button>
           </div>
 
-          {/* Suggestions */}
-          <div className="ask-suggestions">
+          {/* Suggestions — only on landing */}
+          {!hasMessages && <div className="ask-suggestions">
             {suggestions.map((s, i) => (
               <button key={i} className="ask-suggestion" onClick={() => askAI(s)}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, opacity: 0.45 }}>
@@ -307,7 +309,7 @@ function AskSF360({ API_URL }) {
                 <line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
             </button>
-          </div>
+          </div>}
 
           {/* Clear chat */}
           {hasMessages && (
