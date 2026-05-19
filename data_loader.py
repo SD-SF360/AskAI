@@ -490,7 +490,10 @@ def top_season_wicket_takers(season: int, n: int = 5) -> list[dict]:
         ]
     except Exception as e:
         print(f"Season wicket takers error: {e}")
-        return [](batter_name: str,
+        return []
+
+
+def get_batter_vs_all_bowlers(batter_name: str,
                                competition: str = "IPL",
                                phase: str = "ALL",
                                min_balls: int = 12,
